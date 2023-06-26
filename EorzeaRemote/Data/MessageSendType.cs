@@ -2,21 +2,33 @@
 {
     public enum MessageSendType
     {
+        // ============== SERVER ==============
+
         // Core - Issuing Commands
         IssueEmoteOrder,
         IssueSpeakOrder,
         IssueEmoteAndSpeakOrder,
+
+        // Register Player
+        RegisterName,
+
+        // Authentication
+        SeekAuthorization,
+
+        // ============== CLIENT ==============
 
         // Core - Recieving Commands
         RecieveEmoteOrder,
         RecieveSpeakOrder,
         RecieveEmoteAndSpeakOrder,
 
-        // UI
-        RegisterName,
+        // Register Player
+        NewPlayerRegistered,
 
         // Authentication
-        SeekAuthorization,
-        GrantedAuthorization
+        GrantedAuthorization,
+
+        // Disconnect Player
+        PlayerDisconnected,
     }
 }

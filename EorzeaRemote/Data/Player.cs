@@ -6,16 +6,21 @@ namespace EorzeaRemote.Data
     {
         public Connection Connection;
         public string Name;
-        public bool IsAuthenticated;
+        private bool Authenticated;
         
         public ushort Id => Connection.Id;
-        public bool IsConnecting => Connection.IsConnecting;
+        public bool IsConnected => Connection.IsConnected;
+        public bool IsAuthenticated
+        {
+            get { return Authenticated && IsConnected; }
+            set { Authenticated = value; }
+        }
 
         public Player(Connection Connection)
         {
             this.Connection = Connection;
             this.Name = "Player Connecting..";
-            this.IsAuthenticated = false;
+            this.Authenticated = false;
         }
     }
 }

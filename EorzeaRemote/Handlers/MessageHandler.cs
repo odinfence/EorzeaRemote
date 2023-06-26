@@ -37,80 +37,93 @@ namespace EorzeaRemote.Handlers
 
         private void HandleRegisterName(ushort SenderId, Message Message)
         {
-            if (IsConnecting(SenderId)) return;
-
-            var Name = Message.GetString();
-            if (IsValidName(Name))
+            if (Players.TryGetValue(SenderId, out Player? Player))
             {
-                if (Players.TryGetValue(SenderId, out Player? Player))
+                if (Player.IsConnected)
                 {
-                    Player.Name = Name;
+                    var Name = Message.GetString();
+                    if (IsValidName(Name))
+                    {
+                        Player.Name = Name;
+                    }
                 }
             }
         }
 
         private void HandleEmoteOrder(ushort SenderId, Message Message)
         {
-            if (IsAuthorized(SenderId))
+            if (Players.TryGetValue(SenderId, out Player? Player))
             {
-                var Emote = Message.GetString();
-                if (IsValidEmote(Emote))
+                if (Player.IsAuthenticated)
                 {
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Emote);
+                    var Emote = Message.GetString();
+                    if (IsValidEmote(Emote))
+                    {
+                        var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                        Order.AddString(Emote);
 
-                    Server.SendToAll(Order, SenderId);
+                        Server.SendToAll(Order, SenderId);
+                    }
                 }
             }
         }
 
         private void HandleSpeakOrder(ushort SenderId, Message Message)
         {
-            if (IsAuthorized(SenderId))
+            if (Players.TryGetValue(SenderId, out Player? Player))
             {
-                var Channel = Message.GetString();
-                var Text = Message.GetString();
-
-                if (IsValidChannel(Channel) && IsValidEmote(Text))
+                if (Player.IsAuthenticated)
                 {
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Channel);
-                    Order.AddString(Text);
+                    var Channel = Message.GetString();
+                    var Text = Message.GetString();
 
-                    Server.SendToAll(Order, SenderId);
+                    if (IsValidChannel(Channel) && IsValidEmote(Text))
+                    {
+                        var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                        Order.AddString(Channel);
+                        Order.AddString(Text);
+
+                        Server.SendToAll(Order, SenderId);
+                    }
                 }
             }
         }
 
         private void HandleEmoteAndSpeakOrder(ushort SenderId, Message Message)
         {
-            if (IsAuthorized(SenderId))
+            if (Players.TryGetValue(SenderId, out Player? Player))
             {
-                var Emote = Message.GetString();
-                var Channel = Message.GetString();
-                var Text = Message.GetString();
-
-                if (IsValidEmote(Emote) && IsValidChannel(Channel) && IsValidEmote(Text))
+                if (Player.IsAuthenticated)
                 {
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Emote);
-                    Order.AddString(Channel);
-                    Order.AddString(Text);
+                    var Emote = Message.GetString();
+                    var Channel = Message.GetString();
+                    var Text = Message.GetString();
 
-                    Server.SendToAll(Order, SenderId);
+                    if (IsValidEmote(Emote) && IsValidChannel(Channel) && IsValidEmote(Text))
+                    {
+                        var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                        Order.AddString(Emote);
+                        Order.AddString(Channel);
+                        Order.AddString(Text);
+
+                        Server.SendToAll(Order, SenderId);
+                    }
                 }
             }
         }
 
         private void HandleSeekAuthorization(ushort SenderId, Message Message)
         {
-            var Secret = Message.GetString();
-
-            if (Secret.Equals("MySecretKey"))
+            if (Players.TryGetValue(SenderId, out Player? Player))
             {
-                if (Players.TryGetValue(SenderId, out Player? Player))
+                if (Player.IsConnected)
                 {
-                    Player.IsAuthenticated = true;
+                    var Secret = Message.GetString();
+
+                    if (Secret.Equals("MySecretKey"))
+                    {
+                        Player.IsAuthenticated = true;
+                    }
                 }
             }
 
@@ -120,9 +133,6 @@ namespace EorzeaRemote.Handlers
         public bool IsValidName(string input) => input.Length < 21;
         public bool IsValidEmote(string input) => Emotes.Contains(input);
         public bool IsValidChannel(string input) => Channels.Contains(input);
-
-        public bool IsAuthorized(ushort ClientId) => Players.TryGetValue(ClientId, out Player? Player) && Player.IsAuthenticated;
-        public bool IsConnecting(ushort ClientId) => Players.TryGetValue(ClientId, out Player? Player) && Player.IsConnecting;
 
         private readonly HashSet<string> Emotes = new()
         {
