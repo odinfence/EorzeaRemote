@@ -1,5 +1,6 @@
 ﻿using EorzeaRemote.Data;
 using EorzeaRemote.Exceptions;
+using Lumina.Excel.GeneratedSheets;
 using Riptide;
 
 namespace EorzeaRemote.Handlers
@@ -8,11 +9,13 @@ namespace EorzeaRemote.Handlers
     {
         private readonly Server Server;
         private readonly Dictionary<ushort, Player> Players;
+        private readonly ExceptionHandler ExceptionHandler;
         
         public MessageHandler(Server Server, Dictionary<ushort, Player> Players)
         {
             this.Server = Server;
             this.Players = Players;
+            this.ExceptionHandler = new(Server);
         }
 
         public void Handle(MessageReceivedEventArgs e)
@@ -36,12 +39,17 @@ namespace EorzeaRemote.Handlers
             try
             {
                 var Player = GetPlayer(SenderId);
+                var Name = IsValidName(Message.GetString());
 
-                Player.Name = IsValidName(Message.GetString());
+                Player.Name = Name;
+
+                var Response = Message.Create(MessageSendMode.Reliable, MessageSendType.NewPlayerRegistered);
+                Response.AddUShort(SenderId);
+                Response.AddString(Name);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // TODO: Handle
+                ExceptionHandler.Handle(e, SenderId);
             }
         }
 
@@ -50,19 +58,17 @@ namespace EorzeaRemote.Handlers
             try
             {
                 var Player = GetPlayer(SenderId);
+                IsAuthenticated(Player);
 
-                if (Player.IsAuthenticated)
-                {
-                    var Emote = IsValidEmote(Message.GetString());
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Emote);
+                var Emote = IsValidEmote(Message.GetString());
+                var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                Order.AddString(Emote);
 
-                    Server.SendToAll(Order, SenderId);
-                }
+                Server.SendToAll(Order, SenderId);
             }
-            catch(Exception)
+            catch(Exception e)
             {
-                // TODO: Handle
+                ExceptionHandler.Handle(e, SenderId);
             }
         }
 
@@ -71,22 +77,20 @@ namespace EorzeaRemote.Handlers
             try
             {
                 var Player = GetPlayer(SenderId);
+                IsAuthenticated(Player);
 
-                if (Player.IsAuthenticated)
-                {
-                    var Channel = IsValidChannel(Message.GetString());
-                    var Text = IsValidEmote(Message.GetString());
+                var Channel = IsValidChannel(Message.GetString());
+                var Text = IsValidEmote(Message.GetString());
 
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Channel);
-                    Order.AddString(Text);
+                var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                Order.AddString(Channel);
+                Order.AddString(Text);
 
-                    Server.SendToAll(Order, SenderId);
-                }
+                Server.SendToAll(Order, SenderId);
             }
-            catch(Exception)
+            catch(Exception e)
             {
-                // TODO: Handle
+                ExceptionHandler.Handle(e, SenderId);
             }
         }
 
@@ -95,24 +99,22 @@ namespace EorzeaRemote.Handlers
             try
             {
                 var Player = GetPlayer(SenderId);
+                IsAuthenticated(Player);
 
-                if (Player.IsAuthenticated)
-                {
-                    var Emote = IsValidEmote(Message.GetString());
-                    var Channel = IsValidChannel(Message.GetString());
-                    var Text = IsValidEmote(Message.GetString());
+                var Emote = IsValidEmote(Message.GetString());
+                var Channel = IsValidChannel(Message.GetString());
+                var Text = IsValidEmote(Message.GetString());
 
-                    var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
-                    Order.AddString(Emote);
-                    Order.AddString(Channel);
-                    Order.AddString(Text);
+                var Order = Message.Create(MessageSendMode.Reliable, MessageSendType.IssueEmoteOrder);
+                Order.AddString(Emote);
+                Order.AddString(Channel);
+                Order.AddString(Text);
 
-                    Server.SendToAll(Order, SenderId);
-                }
+                Server.SendToAll(Order, SenderId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // TODO: Handle
+                ExceptionHandler.Handle(e, SenderId);
             }
         }
 
@@ -133,9 +135,9 @@ namespace EorzeaRemote.Handlers
 
                 Server.Send(Response, SenderId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // TODO: Handle
+                ExceptionHandler.Handle(e, SenderId);
             }
         }
 
@@ -144,6 +146,11 @@ namespace EorzeaRemote.Handlers
         public string IsValidName(string input) => input.Length < 21 ? input : throw new InvalidInputException();
         public string IsValidEmote(string input) => Emotes.Contains(input) ? input : throw new InvalidInputException();
         public string IsValidChannel(string input) => Channels.Contains(input) ? input : throw new InvalidInputException();
+
+        public void IsAuthenticated(Player Player)
+        {
+            if(!Player.IsAuthenticated) throw new NotAuthorizedException();
+        }
 
         private readonly HashSet<string> Emotes = new()
         {

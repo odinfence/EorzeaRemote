@@ -45,6 +45,11 @@ namespace EorzeaRemote
         private void ClientDisconnected(object? sender, ServerDisconnectedEventArgs e)
         {
             Players.Remove(e.Client.Id);
+
+            var Response = Message.Create(MessageSendMode.Reliable, MessageSendType.PlayerDisconnected);
+            Response.AddUShort(e.Client.Id);
+
+            Server.SendToAll(Response);
         }
 
         private void MessageReceived(object? sender, MessageReceivedEventArgs e)

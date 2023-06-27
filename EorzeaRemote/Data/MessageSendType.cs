@@ -30,5 +30,8 @@
 
         // Disconnect Player
         PlayerDisconnected,
+
+        // Errors
+        GenericError,
     }
 }
