@@ -1,10 +1,7 @@
 ﻿using EorzeaRemote.Data;
-using EorzeaRemote.Validation;
 using Riptide;
 using Riptide.Utils;
 using System.Timers;
-using System.Linq;
-using Riptide.Transports.Tcp;
 using EorzeaRemote.Handlers;
 
 namespace EorzeaRemote

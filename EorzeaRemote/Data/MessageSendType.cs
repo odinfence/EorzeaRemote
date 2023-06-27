@@ -2,7 +2,7 @@
 {
     public enum MessageSendType
     {
-        // ============== SERVER ==============
+        // ============== SENT TO SERVER ==============
 
         // Core - Issuing Commands
         IssueEmoteOrder,
@@ -10,12 +10,12 @@
         IssueEmoteAndSpeakOrder,
 
         // Register Player
-        RegisterName,
+        RegisterNameRequest,
 
         // Authentication
-        SeekAuthorization,
+        AuthorizationRequest,
 
-        // ============== CLIENT ==============
+        // ============== SENT TO CLIENT ==============
 
         // Core - Recieving Commands
         RecieveEmoteOrder,
@@ -26,7 +26,7 @@
         NewPlayerRegistered,
 
         // Authentication
-        GrantedAuthorization,
+        AuthorizationResponse,
 
         // Disconnect Player
         PlayerDisconnected,
